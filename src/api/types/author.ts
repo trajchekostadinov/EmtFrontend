@@ -5,6 +5,12 @@ export interface Author {
     name: string;
     surname: string;
 }
+export interface Author {
+    id: number;
+    name: string;
+    surname: string;
+    countryId?: number;
+}
 
 export interface AuthorDetails {
     id: number;

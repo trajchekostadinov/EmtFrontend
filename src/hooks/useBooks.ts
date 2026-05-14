@@ -1,31 +1,58 @@
 import { useCallback, useEffect, useState } from 'react';
 import bookApi from '../api/bookApi.ts';
-import type { Book } from "../api/types/book.ts";
+import type { Book, BookState, CreateBookDto } from '../api/types/book.ts';
 
-const useBooks = (state?: string | null) => {
+const BOOK_STATES = ['GOOD', 'BAD'] as const;
+const BOOK_CATEGORIES = ['NOVEL', 'THRILLER', 'HISTORY', 'FANTASY', 'BIOGRAPHY', 'CLASSICS', 'OTHER'] as const;
+
+const useBooks = (stateFilter?: BookState | null) => {
     const [books, setBooks] = useState<Book[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<Error | null>(null);
 
-    const fetchBooks = useCallback(async () => {
+    const fetch = useCallback(async () => {
         setLoading(true);
-
+        setError(null);
         try {
-            const response = await bookApi.findAll(state);
+            const response = await bookApi.findAll(stateFilter);
             setBooks(response.data);
-            setError(null);
         } catch (err) {
-            setError(err instanceof Error ? err : new Error('Error'));
+            setError(err instanceof Error ? err : new Error('An unknown error occurred.'));
         } finally {
             setLoading(false);
         }
-    }, [state]);
+    }, [stateFilter]);
+
+    const create = useCallback(async (data: CreateBookDto) => {
+        await bookApi.create(data);
+        await fetch();
+    }, [fetch]);
+
+    const update = useCallback(async (id: number, data: CreateBookDto) => {
+        await bookApi.update(id, data);
+        await fetch();
+    }, [fetch]);
+
+    const remove = useCallback(async (id: number) => {
+        await bookApi.deleteById(id);
+        await fetch();
+    }, [fetch]);
 
     useEffect(() => {
-        void fetchBooks();
-    }, [fetchBooks]);
+        void fetch();
+    }, [fetch]);
 
-    return { books, loading, error };
+    return {
+        books,
+        loading,
+        error,
+        fetch,
+        create,
+        update,
+        remove,
+        states: BOOK_STATES,
+        categories: BOOK_CATEGORIES,
+    };
 };
 
 export default useBooks;

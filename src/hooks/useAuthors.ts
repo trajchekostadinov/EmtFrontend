@@ -1,34 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import authorApi from '../api/authorApi.ts';
-import type { Author } from "../api/types/author.ts";
+import type { Author } from '../api/types/author.ts';
 
 const useAuthors = () => {
     const [authors, setAuthors] = useState<Author[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
-
-    const fetch = useCallback(async () => {
+    const fetchAuthors = useCallback(async () => {
         setLoading(true);
-
         try {
             const response = await authorApi.findAll();
             setAuthors(response.data);
             setError(null);
         } catch (err) {
-            setError(err instanceof Error ? err : new Error('An unknown error occurred.'));
+            setError(err instanceof Error ? err : new Error('Error fetching authors'));
         } finally {
             setLoading(false);
         }
-
     }, []);
 
     useEffect(() => {
-        void fetch();
-    }, [fetch]);
+        void fetchAuthors();
+    }, [fetchAuthors]);
 
-    return { authors, loading, error, fetch };
-
+    return { authors, loading, error, fetchAuthors };
 };
 
 export default useAuthors;

@@ -3,8 +3,9 @@ import {
     AppBar, Box, Button, Drawer, IconButton, List, ListItem, ListItemButton, ListItemText, Toolbar, Typography
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useState } from 'react';
+import { useAuth } from '../../../../context/AuthContext.tsx';
 
 const pages = [
     { path: '/', name: 'home' },
@@ -15,6 +16,13 @@ const pages = [
 
 const Header = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const { isAuthenticated, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     return (
         <Box>
@@ -45,7 +53,15 @@ const Header = () => {
                         ))}
                     </Box>
 
-                    <Button color='inherit' sx={{ ml: 'auto' }}>Login</Button>
+                    {isAuthenticated ? (
+                        <Button color='inherit' sx={{ ml: 'auto' }} onClick={handleLogout}>
+                            Logout
+                        </Button>
+                    ) : (
+                        <Button color='inherit' sx={{ ml: 'auto' }} onClick={() => navigate('/login')}>
+                            Login
+                        </Button>
+                    )}
                 </Toolbar>
             </AppBar>
 
@@ -55,7 +71,7 @@ const Header = () => {
                         {pages.map((page) => (
                             <ListItem key={page.name} disablePadding>
                                 <ListItemButton component={Link} to={page.path}>
-                                    <ListItemText primary={page.name} sx={{textTransform: 'capitalize'}}/>
+                                    <ListItemText primary={page.name} sx={{ textTransform: 'capitalize' }}/>
                                 </ListItemButton>
                             </ListItem>
                         ))}
